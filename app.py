@@ -1,4 +1,4 @@
-NKFITNESS AI – Firebase Phone OTP Login + Workout App
+NKFITNESS AI - Firebase Phone OTP Login + Workout App
 
 import streamlit as st import pyrebase import random import pandas as pd
 
@@ -14,7 +14,7 @@ st.set_page_config(page_title="NKFITNESS AI", layout="wide")
 
 if "user" not in st.session_state: st.session_state.user = None
 
-if not st.session_state.user: st.title("NKFITNESS AI - Login with Phone") phone = st.text_input("Enter test phone number", value="+911234567890") otp = st.text_input("Enter OTP", value="123456") if st.button("Verify & Login"): try: # NOTE: This is mock login - Firebase does not allow phone auth directly in Pyrebase if phone == "+911234567890" and otp == "123456": st.session_state.user = phone st.success(f"Welcome, {phone}!") else: st.error("Invalid test number or OTP.") except: st.error("Authentication failed.") st.stop()
+if not st.session_state.user: st.title("NKFITNESS AI - Login with Phone") phone = st.text_input("Enter test phone number", value="+911234567890") otp = st.text_input("Enter OTP", value="123456") if st.button("Verify & Login"): try: if phone == "+911234567890" and otp == "123456": st.session_state.user = phone st.success(f"Welcome, {phone}!") else: st.error("Invalid test number or OTP.") except: st.error("Authentication failed.") st.stop()
 
 --- App UI ---
 
