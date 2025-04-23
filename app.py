@@ -1,93 +1,139 @@
 import streamlit as st
-import pyrebase
+import requests
+import json
 import pandas as pd
 import random
 from datetime import datetime
 
-# FIREBASE CONFIG
-firebaseConfig = {
-    "apiKey": "AIzaSyBnjOPY0yWreRdW9dD9l9G8F49wnO6WmfE",
-    "authDomain": "nkfitnessai.firebaseapp.com",
-    "projectId": "nkfitnessai",
-    "storageBucket": "nkfitnessai.appspot.com",
-    "messagingSenderId": "YOUR_SENDER_ID",
-    "appId": "YOUR_APP_ID",
-    "databaseURL": ""
-}
-firebase = pyrebase.initialize_app(firebaseConfig)
-auth = firebase.auth()
+FIREBASE_API_KEY = "AIzaSyBnjOPY0yWreRdW9dD9l9G8F49wnO6WmfE"
 
-# LOGIN SECTION
-st.title("NKFITNESS AI - Email Login")
-auth_mode = st.radio("Choose:", ["Login", "Register"])
-email = st.text_input("Email")
-password = st.text_input("Password", type="password")
+st.set_page_config(page_title="NKFITNESS AI - Full App", layout="wide")
 
-if auth_mode == "Register":
-    if st.button("Register"):
-        try:
-            auth.create_user_with_email_and_password(email, password)
-            st.success("Registered successfully. You can now log in.")
-        except:
-            st.error("Registration failed. Try a different email.")
-else:
-    if st.button("Login"):
-        try:
-            auth.sign_in_with_email_and_password(email, password)
-            st.success("Login successful!")
-        except:
-            st.error("Login failed. Please check your credentials.")
+if "email_token" not in st.session_state:
+    st.session_state.email_token = None
+    st.session_state.email_user = ""
 
-# IF LOGGED IN, CONTINUE
-if st.session_state.get("Authentication Successful") or auth_mode == "Login":
-    st.title("Welcome to NKFITNESS AI!")
-    name = st.text_input("Enter your name")
-    goal = st.selectbox("Fitness Goal", ["Lose Weight", "Gain Muscle", "Maintain Fitness"])
-    level = st.radio("Select Your Level", ["Beginner", "Intermediate", "Advanced"])
+def register_user(email, password):
+    res = requests.post(
+        f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={FIREBASE_API_KEY}",
+        headers={"Content-Type": "application/json"},
+        data=json.dumps({"email": email, "password": password, "returnSecureToken": True})
+    )
+    return res
 
-    if st.button("Generate Workout Plan"):
-        st.success(f"{name}, here's your custom workout plan to {goal.lower()} at {level.lower()} level.")
+def login_user(email, password):
+    res = requests.post(
+        f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}",
+        headers={"Content-Type": "application/json"},
+        data=json.dumps({"email": email, "password": password, "returnSecureToken": True})
+    )
+    return res
 
-        muscle_groups = {
-            "Chest": [("Bench Press", "https://youtu.be/gRVjAtPip0Y"),
-                      ("Incline Press", "https://youtu.be/8iPEnn-ltC8"),
-                      ("Push-Ups", "https://youtu.be/_l3ySVKYVJ8"),
-                      ("Chest Fly", "https://youtu.be/eozdVDA78K0")],
-            "Biceps": [("Barbell Curl", "https://youtu.be/kwG2ipFRgfo"),
-                       ("Hammer Curl", "https://youtu.be/zC3nLlEvin4"),
-                       ("Concentration Curl", "https://youtu.be/soxrZlIl35U")],
-            "Triceps": [("Dips", "https://youtu.be/2z8JmcrW-As"),
-                        ("Tricep Pushdown", "https://youtu.be/vB5OHsJ3EME"),
-                        ("Skull Crushers", "https://youtu.be/d_KZxkY_0cM")],
-            "Shoulders": [("Overhead Press", "https://youtu.be/2yjwXTZQDDI"),
-                          ("Lateral Raise", "https://youtu.be/kDqklk1ZESo"),
-                          ("Shrugs", "https://youtu.be/NUmGRzITZZ0")],
-            "Legs": [("Squats", "https://youtu.be/aclHkVaku9U"),
-                     ("Lunges", "https://youtu.be/QOVaHwm-Q6U"),
-                     ("Leg Press", "https://youtu.be/IZxyjW7MPJQ")],
-            "Core": [("Plank", "https://youtu.be/pSHjTRCQxIw"),
-                     ("Crunches", "https://youtu.be/Xyd_fa5zoEU"),
-                     ("Russian Twists", "https://youtu.be/wkD8rjkodUI")]
-        }
+if not st.session_state.email_token:
+    st.title("NKFITNESS AI - Email Login")
+    mode = st.radio("Choose:", ["Login", "Register"])
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
 
-        for muscle, exercises in muscle_groups.items():
-            st.subheader(muscle)
-            for exercise, link in exercises:
-                st.markdown(f"- [{exercise}]({link})")
-
-        # Diet Plan
-        st.subheader("Sample Diet Plan")
-        if goal == "Gain Muscle":
-            st.write("- Breakfast: Eggs, toast, peanut butter")
-            st.write("- Lunch: Chicken breast + rice")
-            st.write("- Dinner: Salmon + potatoes + broccoli")
-        elif goal == "Lose Weight":
-            st.write("- Breakfast: Oats + fruit")
-            st.write("- Lunch: Grilled chicken salad")
-            st.write("- Dinner: Steamed veggies + lentils")
+    if st.button(mode):
+        if mode == "Register":
+            response = register_user(email, password)
+            if response.status_code == 200:
+                st.success("User registered! You can now log in.")
+            else:
+                st.error(response.json()["error"]["message"])
         else:
-            st.write("- Balanced diet with moderate carbs, protein, and veggies")
+            response = login_user(email, password)
+            if response.status_code == 200:
+                st.session_state.email_token = response.json()["idToken"]
+                st.session_state.email_user = email
+                st.success(f"Welcome, {email}")
+            else:
+                st.error(response.json()["error"]["message"])
+    st.stop()
 
-        # Motivation
-        st.subheader("Motivation")
-        st.success("FOR MOTIVATION: WATCH NISHANK’S SHIRTLESS PHOTOS.")
+st.sidebar.title("Welcome!")
+st.sidebar.markdown(f"**Logged in as:** `{st.session_state.email_user}`")
+tabs = st.sidebar.radio("Navigate to:", ["Workout Plan", "Diet Plan", "Progress Tracker", "Motivation"])
+
+goal = st.sidebar.selectbox("Select your fitness goal:", ["Lose Weight", "Gain Muscle", "Maintain Fitness"])
+level = st.sidebar.radio("Choose your level:", ["Beginner", "Intermediate", "Advanced"])
+diet_type = st.sidebar.radio("Diet Type:", ["Veg", "Non-Veg"])
+
+muscle_groups = {
+    "Chest": ["Flat Bench Press", "Incline Dumbbell Press", "Chest Fly", "Cable Crossovers", "Push-ups",
+              "Decline Bench Press", "Dips", "Pec Deck", "Smith Machine Press", "Incline Barbell Press"],
+    "Biceps": ["Barbell Curl", "Dumbbell Curl", "Hammer Curl", "Preacher Curl", "EZ Bar Curl",
+               "Concentration Curl", "Cable Curl", "Zottman Curl", "Incline Curl", "Reverse Curl"],
+    "Triceps": ["Skull Crushers", "Triceps Pushdowns", "Overhead Extensions", "Close-Grip Bench",
+                "Dips", "Kickbacks", "Rope Pushdowns", "Diamond Push-ups", "Machine Press", "Reverse Pushdowns"],
+    "Shoulders": ["Overhead Press", "Lateral Raise", "Front Raise", "Reverse Fly", "Arnold Press",
+                  "Barbell Press", "Cable Raise", "Shrugs", "Face Pulls", "Machine Press"],
+    "Back": ["Deadlifts", "Pull-ups", "Barbell Rows", "Lat Pulldowns", "Seated Row",
+             "T-Bar Row", "Cable Row", "Dumbbell Row", "Good Mornings", "Hyperextensions"],
+    "Legs": ["Squats", "Leg Press", "Lunges", "Leg Extensions", "Hamstring Curls",
+             "Romanian Deadlifts", "Walking Lunges", "Goblet Squats", "Hip Thrusts", "Calf Raises"],
+    "Core": ["Plank", "Crunches", "Leg Raises", "Russian Twists", "Mountain Climbers",
+             "V-Ups", "Cable Crunch", "Bicycle Crunches", "Toe Touches", "Hanging Leg Raises"]
+}
+
+if tabs == "Workout Plan":
+    st.title("Workout Plan by Muscle Group")
+    for group, exercises in muscle_groups.items():
+        st.subheader(group)
+        for i, ex in enumerate(exercises, 1):
+            st.markdown(f"**{i}.** {ex}")
+
+diets = {
+    "Lose Weight": {
+        "Veg": ["Oats + Fruits", "Lentils + Salad", "Green Tea"],
+        "Non-Veg": ["Boiled eggs", "Grilled chicken + Veggies", "Yogurt"]
+    },
+    "Gain Muscle": {
+        "Veg": ["Paneer + Rice", "Protein shake", "Tofu wraps"],
+        "Non-Veg": ["Egg whites", "Chicken breast + Rice", "Fish curry"]
+    },
+    "Maintain Fitness": {
+        "Veg": ["Upma + Nuts", "Chapati + Daal", "Fruit smoothie"],
+        "Non-Veg": ["Egg sandwich", "Grilled fish + Veggies", "Milk"]
+    }
+}
+
+if tabs == "Diet Plan":
+    st.title(f"{diet_type} Diet Plan for {goal}")
+    for item in diets[goal][diet_type]:
+        st.markdown(f"- {item}")
+
+elif tabs == "Progress Tracker":
+    st.title("Progress Tracker")
+    weight = st.number_input("Weight (kg):", min_value=30, max_value=200, value=70)
+    height = st.number_input("Height (cm):", min_value=100, max_value=250, value=170)
+    bmi = round(weight / ((height / 100) ** 2), 1)
+    st.success(f"Your BMI is: {bmi}")
+
+    st.subheader("Weekly Calorie Burn")
+    cal_df = pd.DataFrame({
+        "Day": [f"Day {i}" for i in range(1, 8)],
+        "Calories Burned": [random.randint(200, 600) for _ in range(7)]
+    })
+    st.line_chart(cal_df.set_index("Day"))
+
+    if st.button("Save Progress"):
+        with open("progress_log.txt", "a") as f:
+            f.write(f"{datetime.now()} | {st.session_state.email_user} | Weight: {weight}kg | Height: {height}cm | BMI: {bmi}\n")
+        st.success("Progress saved!")
+
+elif tabs == "Motivation":
+    st.title("Daily Motivation")
+    st.markdown("**FOR MOTIVATION: GO WATCH NISHANK'S SHIRTLESS PHOTOS.**")
+    quotes = [
+        "No excuses, just results!",
+        "Progress, not perfection.",
+        "The only bad workout is the one you didn’t do.",
+        "Push harder than yesterday.",
+        "Discipline beats motivation."
+    ]
+    st.info(random.choice(quotes))
+
+st.markdown("---")
+st.markdown("Made with 💪 by NKFITNESS-AI")
