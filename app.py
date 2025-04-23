@@ -5,7 +5,7 @@ import pandas as pd
 import random  
 from datetime import datetime
 
-FIREBASE_API_KEY = "YOUR_FIREBASE_KEY"
+FIREBASE_API_KEY = "AIzaSyBnjOPY0yWreRdW9dD9l9G8F49wnO6WmfE"
 
 # ---------------- Session ----------------
 if "email_token" not in st.session_state:
