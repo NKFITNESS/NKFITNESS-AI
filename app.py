@@ -1,72 +1,69 @@
-# NKFITNESS AI - Final App with Real Firebase OTP Login + Full Features
-
 import streamlit as st
-import random
-import pandas as pd
 import requests
 import json
+import pandas as pd
+import random
 from datetime import datetime
 
-# Firebase API Key
 FIREBASE_API_KEY = "AIzaSyBnjOPY0yWreRdW9dDl9C8F49wnO6WmfEE"
 
-st.set_page_config(page_title="NKFITNESS AI", layout="wide")
+st.set_page_config(page_title="NKFITNESS AI - Full App", layout="wide")
 
-# --- Firebase OTP Login ---
-if "idToken" not in st.session_state:
-    st.session_state.idToken = None
-    st.session_state.phone = ""
-    st.session_state.session_info = ""
+if "email_token" not in st.session_state:
+    st.session_state.email_token = None
+    st.session_state.email_user = ""
 
-st.title("NKFITNESS AI - Login with Phone OTP")
+# Firebase Auth Functions
+def register_user(email, password):
+    res = requests.post(
+        f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={FIREBASE_API_KEY}",
+        headers={"Content-Type": "application/json"},
+        data=json.dumps({"email": email, "password": password, "returnSecureToken": True})
+    )
+    return res
 
-if not st.session_state.idToken:
-    phone = st.text_input("Enter your phone number (+91...):", value=st.session_state.phone or "")
-    if st.button("Send OTP"):
-        res = requests.post(
-            f"https://identitytoolkit.googleapis.com/v1/accounts:sendVerificationCode?key={FIREBASE_API_KEY}",
-            headers={"Content-Type": "application/json"},
-            data=json.dumps({
-                "phoneNumber": phone,
-                "recaptchaToken": "mock"
-            })
-        )
-        if res.status_code == 200:
-            st.session_state.phone = phone
-            st.session_state.session_info = res.json()["sessionInfo"]
-            st.success("OTP sent successfully.")
+def login_user(email, password):
+    res = requests.post(
+        f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={FIREBASE_API_KEY}",
+        headers={"Content-Type": "application/json"},
+        data=json.dumps({"email": email, "password": password, "returnSecureToken": True})
+    )
+    return res
+
+# Login/Register UI
+if not st.session_state.email_token:
+    st.title("NKFITNESS AI - Email Login")
+    mode = st.radio("Choose:", ["Login", "Register"])
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+
+    if st.button(mode):
+        if mode == "Register":
+            response = register_user(email, password)
+            if response.status_code == 200:
+                st.success("User registered! You can now log in.")
+            else:
+                st.error(response.json()["error"]["message"])
         else:
-            st.error("Failed to send OTP. Use test number or check Firebase settings.")
-
-if st.session_state.session_info and not st.session_state.idToken:
-    otp = st.text_input("Enter OTP:")
-    if st.button("Verify OTP"):
-        res = requests.post(
-            f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPhoneNumber?key={FIREBASE_API_KEY}",
-            headers={"Content-Type": "application/json"},
-            data=json.dumps({
-                "sessionInfo": st.session_state.session_info,
-                "code": otp
-            })
-        )
-        if res.status_code == 200:
-            st.session_state.idToken = res.json()["idToken"]
-            st.success(f"Welcome, {st.session_state.phone}!")
-        else:
-            st.error("Invalid OTP.")
-
-if not st.session_state.idToken:
+            response = login_user(email, password)
+            if response.status_code == 200:
+                st.session_state.email_token = response.json()["idToken"]
+                st.session_state.email_user = email
+                st.success(f"Welcome, {email}")
+            else:
+                st.error(response.json()["error"]["message"])
     st.stop()
 
-# --- Sidebar Controls ---
-st.sidebar.markdown(f"**Logged in as:** `{st.session_state.phone}`")
-tabs = st.sidebar.radio("Go to:", ["Workout Plan", "Diet Plan", "Progress Tracker", "Motivation"])
+# Main app once logged in
+st.sidebar.title("Welcome!")
+st.sidebar.markdown(f"**Logged in as:** `{st.session_state.email_user}`")
+tabs = st.sidebar.radio("Navigate to:", ["Workout Plan", "Diet Plan", "Progress Tracker", "Motivation"])
 
-goal = st.sidebar.selectbox("Select your goal:", ["Lose Weight", "Gain Muscle", "Maintain Fitness"])
-level = st.sidebar.radio("Choose fitness level:", ["Beginner", "Intermediate", "Advanced"])
+goal = st.sidebar.selectbox("Select your fitness goal:", ["Lose Weight", "Gain Muscle", "Maintain Fitness"])
+level = st.sidebar.radio("Choose your level:", ["Beginner", "Intermediate", "Advanced"])
 diet_type = st.sidebar.radio("Diet Type:", ["Veg", "Non-Veg"])
 
-# --- Workout Plan ---
+# --- Workout Section ---
 muscle_groups = {
     "Chest": ["Flat Bench Press", "Incline Dumbbell Press", "Chest Fly", "Cable Crossovers", "Push-ups",
               "Decline Bench Press", "Dips", "Pec Deck", "Smith Machine Press", "Incline Barbell Press"],
@@ -85,13 +82,13 @@ muscle_groups = {
 }
 
 if tabs == "Workout Plan":
-    st.header("Workout Variations by Muscle Group")
+    st.title("Workout Plan by Muscle Group")
     for group, exercises in muscle_groups.items():
         st.subheader(group)
         for i, ex in enumerate(exercises, 1):
             st.markdown(f"**{i}.** {ex}")
 
-# --- Diet Plan ---
+# --- Diet Section ---
 diets = {
     "Lose Weight": {
         "Veg": ["Oats + Fruits", "Lentils + Salad", "Green Tea"],
@@ -108,19 +105,19 @@ diets = {
 }
 
 if tabs == "Diet Plan":
-    st.header(f"{diet_type} Diet Plan for {goal}")
+    st.title(f"{diet_type} Diet Plan for {goal}")
     for item in diets[goal][diet_type]:
         st.markdown(f"- {item}")
 
 # --- Progress Tracker ---
 elif tabs == "Progress Tracker":
-    st.header("Track Your Fitness Progress")
-    weight = st.number_input("Enter your current weight (kg):", min_value=30, max_value=200, value=70)
-    height = st.number_input("Enter your height (cm):", min_value=100, max_value=250, value=170)
+    st.title("Progress Tracker")
+    weight = st.number_input("Weight (kg):", min_value=30, max_value=200, value=70)
+    height = st.number_input("Height (cm):", min_value=100, max_value=250, value=170)
     bmi = round(weight / ((height / 100) ** 2), 1)
     st.success(f"Your BMI is: {bmi}")
 
-    st.subheader("Weekly Calorie Burn Tracker")
+    st.subheader("Weekly Calorie Burn")
     cal_df = pd.DataFrame({
         "Day": [f"Day {i}" for i in range(1, 8)],
         "Calories Burned": [random.randint(200, 600) for _ in range(7)]
@@ -129,25 +126,21 @@ elif tabs == "Progress Tracker":
 
     if st.button("Save Progress"):
         with open("progress_log.txt", "a") as f:
-            f.write(f"{datetime.now()} | {st.session_state.phone} | Weight: {weight}kg | Height: {height}cm | BMI: {bmi}\n")
-        st.success("Progress saved successfully!")
+            f.write(f"{datetime.now()} | {st.session_state.email_user} | Weight: {weight}kg | Height: {height}cm | BMI: {bmi}\n")
+        st.success("Progress saved!")
 
-# --- Motivation ---
+# --- Motivation Tab ---
 elif tabs == "Motivation":
-    st.header("Daily Motivation")
-    if "first_motivation" not in st.session_state:
-        st.session_state.first_motivation = True
-
-    if st.session_state.first_motivation:
-        st.warning("FOR MOTIVATION: WATCH NISHANK GYM PHOTOS.")
-        st.session_state.first_motivation = False
-    else:
-        st.info(random.choice([
-            "No excuses, just results!",
-            "Progress, not perfection.",
-            "The only bad workout is the one you didn’t do.",
-            "Push harder than yesterday."
-        ]))
+    st.title("Daily Motivation")
+    st.markdown("**FOR MOTIVATION: GO WATCH NISHANK'S SHIRTLESS PHOTOS.**")
+    quotes = [
+        "No excuses, just results!",
+        "Progress, not perfection.",
+        "The only bad workout is the one you didn’t do.",
+        "Push harder than yesterday.",
+        "Discipline beats motivation."
+    ]
+    st.info(random.choice(quotes))
 
 st.markdown("---")
-st.markdown("Built by NKFITNESS-AI with 💪")
+st.markdown("Made with 💪 by NKFITNESS-AI")
