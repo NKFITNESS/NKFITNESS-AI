@@ -34,165 +34,146 @@ if not st.session_state.email_token:
     mode = st.radio("Choose:", ["Login", "Register"])
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
+
     if st.button(mode):
         if mode == "Register":
             response = register_user(email, password)
             if response.status_code == 200:
-                st.success("Registered successfully! You can now log in.")
+                st.success("User registered successfully! Please log in.")
             else:
                 st.error(response.json()["error"]["message"])
         else:
             response = login_user(email, password)
             if response.status_code == 200:
-    st.session_state.email_token = response.json()["idToken"]
-    st.session_state.email_user = email
-    st.experimental_rerun()  # This will immediately refresh and load the main app
+                st.session_state.email_token = response.json()["idToken"]
+                st.session_state.email_user = email
+                st.rerun()
             else:
                 st.error(response.json()["error"]["message"])
     st.stop()
 
-st.sidebar.title("Welcome!")
+# Sidebar
+st.sidebar.title("Welcome, Champion!")
 st.sidebar.markdown(f"**Logged in as:** `{st.session_state.email_user}`")
+user_name = st.sidebar.text_input("Enter your name", value="Champion")
 tabs = st.sidebar.radio("Navigate to:", ["Workout Plan", "Diet Plan", "Progress Tracker", "Motivation"])
-
-goal = st.sidebar.selectbox("Select your fitness goal:", ["Lose Weight", "Gain Muscle", "Maintain Fitness"])
-level = st.sidebar.radio("Choose your level:", ["Beginner", "Intermediate", "Advanced"])
+goal = st.sidebar.selectbox("Fitness goal:", ["Lose Weight", "Gain Muscle", "Maintain Fitness"])
+level = st.sidebar.radio("Fitness level:", ["Beginner", "Intermediate", "Advanced"])
 diet_type = st.sidebar.radio("Diet Type:", ["Veg", "Non-Veg"])
 
-# Muscle Workouts with Video Links
+# Workout dictionary with YouTube links
+def linkify(exercise, url):
+    return f"[{exercise}]({url})"
+
 muscle_groups = {
     "Chest": [
-        ("Flat Bench Press", "https://youtu.be/gRVjAtPip0Y"),
-        ("Incline Dumbbell Press", "https://youtu.be/8iPEnn-ltC8"),
-        ("Chest Fly", "https://youtu.be/eozdVDA78K0"),
-        ("Cable Crossovers", "https://youtu.be/taI4XduLpTk"),
-        ("Push-ups", "https://youtu.be/IODxDxX7oi4"),
-        ("Decline Bench Press", "https://youtu.be/DL2ze5e6vDE"),
-        ("Dips", "https://youtu.be/2z8JmcrW-As"),
-        ("Pec Deck", "https://youtu.be/V2dJkNDT0sA"),
-        ("Smith Machine Press", "https://youtu.be/av7-8igSXTs"),
-        ("Incline Barbell Press", "https://youtu.be/SfjgM6QMnys")
+        ("Flat Bench Press", "https://www.youtube.com/watch?v=gRVjAtPip0Y"),
+        ("Incline Dumbbell Press", "https://www.youtube.com/watch?v=8iPEnn-ltC8"),
+        ("Push-ups", "https://www.youtube.com/watch?v=_l3ySVKYVJ8"),
+        ("Chest Fly", "https://www.youtube.com/watch?v=eozdVDA78K0"),
+        ("Cable Crossover", "https://www.youtube.com/watch?v=taI4XduLpTk"),
+        ("Decline Bench Press", "https://www.youtube.com/watch?v=YQ2jme4XRMA"),
+        ("Dips", "https://www.youtube.com/watch?v=2z8JmcrW-As"),
+        ("Incline Barbell Press", "https://www.youtube.com/watch?v=SrqOu55lrYU"),
+        ("Smith Machine Press", "https://www.youtube.com/watch?v=dqndWyN0G1Q"),
+        ("Pec Deck", "https://www.youtube.com/watch?v=TyKLXzXBSPU")
     ],
     "Biceps": [
-        ("Barbell Curl", "https://youtu.be/kwG2ipFRgfo"),
-        ("Dumbbell Curl", "https://youtu.be/sAq_ocpRh_I"),
-        ("Hammer Curl", "https://youtu.be/zC3nLlEvin4"),
-        ("Preacher Curl", "https://youtu.be/1Tq3QdYUuHs"),
-        ("EZ Bar Curl", "https://youtu.be/N8sR1tVI1ok"),
-        ("Concentration Curl", "https://youtu.be/0AUGkch3tzc"),
-        ("Cable Curl", "https://youtu.be/qyVTrlnxY9A"),
-        ("Zottman Curl", "https://youtu.be/OYYA5NggLZw"),
-        ("Incline Curl", "https://youtu.be/soxrZlIl35U"),
-        ("Reverse Curl", "https://youtu.be/3n9JYzqN4AM")
+        ("Barbell Curl", "https://www.youtube.com/watch?v=kwG2ipFRgfo"),
+        ("Dumbbell Curl", "https://www.youtube.com/watch?v=sAq_ocpRh_I"),
+        ("Hammer Curl", "https://www.youtube.com/watch?v=zC3nLlEvin4"),
+        ("Preacher Curl", "https://www.youtube.com/watch?v=2L2lnxIcNmo"),
+        ("EZ Bar Curl", "https://www.youtube.com/watch?v=x9kZ3-M5SXA"),
+        ("Concentration Curl", "https://www.youtube.com/watch?v=8XmM1pBt3PE"),
+        ("Zottman Curl", "https://www.youtube.com/watch?v=wECZAfmKJ7w"),
+        ("Cable Curl", "https://www.youtube.com/watch?v=DAcWq32qDzI"),
+        ("Incline Dumbbell Curl", "https://www.youtube.com/watch?v=soxrZlIl35U"),
+        ("Reverse Curl", "https://www.youtube.com/watch?v=Vw2m5kYjYuU")
     ],
     "Triceps": [
-        ("Skull Crushers", "https://youtu.be/d_KZxkY_0cM"),
-        ("Pushdowns", "https://youtu.be/2-LAMcpzODU"),
-        ("Overhead Extensions", "https://youtu.be/YbX7Wd8jQ-Q"),
-        ("Close-Grip Bench", "https://youtu.be/wxQfWae5wfg"),
-        ("Dips", "https://youtu.be/2z8JmcrW-As"),
-        ("Kickbacks", "https://youtu.be/YbX7Wd8jQ-Q"),
-        ("Rope Pushdowns", "https://youtu.be/2-LAMcpzODU"),
-        ("Diamond Push-ups", "https://youtu.be/J0DnG1_S92I"),
-        ("Machine Press", "https://youtu.be/BcYtJWlL75s"),
-        ("Reverse Pushdowns", "https://youtu.be/LNBvdcDqZJQ")
+        ("Skull Crushers", "https://www.youtube.com/watch?v=d_KZxkY_0cM"),
+        ("Triceps Pushdowns", "https://www.youtube.com/watch?v=2-LAMcpzODU"),
+        ("Overhead Extensions", "https://www.youtube.com/watch?v=_gsUck-7M74"),
+        ("Close-Grip Bench", "https://www.youtube.com/watch?v=6JtP6ju0IMw"),
+        ("Dips", "https://www.youtube.com/watch?v=0326dy_-CzM"),
+        ("Kickbacks", "https://www.youtube.com/watch?v=-xa5jWlZYkI"),
+        ("Rope Pushdowns", "https://www.youtube.com/watch?v=6SSIxhh0_J4"),
+        ("Diamond Push-ups", "https://www.youtube.com/watch?v=J0DnG1_S92I"),
+        ("Machine Press", "https://www.youtube.com/watch?v=Y2DS3Vxskcw"),
+        ("Reverse Pushdowns", "https://www.youtube.com/watch?v=COuZG_w1YHM")
     ],
     "Shoulders": [
-        ("Overhead Press", "https://youtu.be/2yjwXTZQDDI"),
-        ("Lateral Raise", "https://youtu.be/3VcKaXpzqRo"),
-        ("Front Raise", "https://youtu.be/-t7fuZ0KhDA"),
-        ("Reverse Fly", "https://youtu.be/-1nGoEtjCN4"),
-        ("Arnold Press", "https://youtu.be/vj2w851ZHRM"),
-        ("Barbell Press", "https://youtu.be/B-aVuyhvLHU"),
-        ("Cable Raise", "https://youtu.be/nr0Aq_rEn7k"),
-        ("Shrugs", "https://youtu.be/m7n5Yb3ySMI"),
-        ("Face Pulls", "https://youtu.be/rep-qVOkqgk"),
-        ("Machine Press", "https://youtu.be/1QY-fcMy3C4")
+        ("Overhead Press", "https://www.youtube.com/watch?v=qEwKCR5JCog"),
+        ("Lateral Raise", "https://www.youtube.com/watch?v=kDqklk1ZESo"),
+        ("Front Raise", "https://www.youtube.com/watch?v=-t7fuZ0KhDA"),
+        ("Reverse Fly", "https://www.youtube.com/watch?v=WrTEF5yBCcU"),
+        ("Arnold Press", "https://www.youtube.com/watch?v=vj2w851ZHRM"),
+        ("Barbell Press", "https://www.youtube.com/watch?v=2yjwXTZQDDI"),
+        ("Cable Raise", "https://www.youtube.com/watch?v=q91bljllyqY"),
+        ("Shrugs", "https://www.youtube.com/watch?v=3UWi44yN-wU"),
+        ("Face Pulls", "https://www.youtube.com/watch?v=rep-qVOkqgk"),
+        ("Machine Press", "https://www.youtube.com/watch?v=gvN_Rp_VWjU")
     ],
     "Legs": [
-        ("Squats", "https://youtu.be/aclHkVaku9U"),
-        ("Leg Press", "https://youtu.be/IZxyjW7MPJQ"),
-        ("Lunges", "https://youtu.be/QOVaHwm-Q6U"),
-        ("Leg Extensions", "https://youtu.be/YyvSfVjQeL0"),
-        ("Hamstring Curls", "https://youtu.be/1Tq3QdYUuHs"),
-        ("Romanian Deadlifts", "https://youtu.be/2SHsk9AzdjA"),
-        ("Walking Lunges", "https://youtu.be/QOVaHwm-Q6U"),
-        ("Goblet Squats", "https://youtu.be/6xwGFn-J_Qo"),
-        ("Hip Thrusts", "https://youtu.be/SEdqd1n0cvg"),
-        ("Calf Raises", "https://youtu.be/-M4-G8p8fmc")
+        ("Squats", "https://www.youtube.com/watch?v=Dy28eq2PjcM"),
+        ("Leg Press", "https://www.youtube.com/watch?v=IZxyjW7MPJQ"),
+        ("Lunges", "https://www.youtube.com/watch?v=QOVaHwm-Q6U"),
+        ("Leg Extensions", "https://www.youtube.com/watch?v=8b1YMLN5zAI"),
+        ("Hamstring Curls", "https://www.youtube.com/watch?v=Joba0kJVgQs"),
+        ("Romanian Deadlifts", "https://www.youtube.com/watch?v=2SHsk9AzdjA"),
+        ("Walking Lunges", "https://www.youtube.com/watch?v=wrwwXE_x-pQ"),
+        ("Goblet Squats", "https://www.youtube.com/watch?v=6xwGFn-J_Qo"),
+        ("Hip Thrusts", "https://www.youtube.com/watch?v=LM8XHLYJoYs"),
+        ("Calf Raises", "https://www.youtube.com/watch?v=-M4-G8p8fmc")
     ],
     "Core": [
-        ("Plank", "https://youtu.be/pSHjTRCQxIw"),
-        ("Crunches", "https://youtu.be/Xyd_fa5zoEU"),
-        ("Leg Raises", "https://youtu.be/JB2oyawG9KI"),
-        ("Russian Twists", "https://youtu.be/wkD8rjkodUI"),
-        ("Mountain Climbers", "https://youtu.be/cnyTQDSE884"),
-        ("V-Ups", "https://youtu.be/iP2fjvG0g3w"),
-        ("Cable Crunch", "https://youtu.be/2pjEwYdZ4qU"),
-        ("Bicycle Crunches", "https://youtu.be/Iwyvozckjak"),
-        ("Toe Touches", "https://youtu.be/YSx4W3SAhKk"),
-        ("Hanging Leg Raises", "https://youtu.be/rBJZ3zDS5nQ")
+        ("Plank", "https://www.youtube.com/watch?v=pSHjTRCQxIw"),
+        ("Crunches", "https://www.youtube.com/watch?v=Xyd_fa5zoEU"),
+        ("Leg Raises", "https://www.youtube.com/watch?v=l4kQd9eWclE"),
+        ("Russian Twists", "https://www.youtube.com/watch?v=wkD8rjkodUI"),
+        ("Mountain Climbers", "https://www.youtube.com/watch?v=nmwgirgXLYM"),
+        ("V-Ups", "https://www.youtube.com/watch?v=Z8i5zDA8fH4"),
+        ("Cable Crunch", "https://www.youtube.com/watch?v=zwfVYxDGVrg"),
+        ("Bicycle Crunch", "https://www.youtube.com/watch?v=9FGilxCbdz8"),
+        ("Toe Touches", "https://www.youtube.com/watch?v=kAqFIyHKu4w"),
+        ("Hanging Leg Raises", "https://www.youtube.com/watch?v=bkD9LwDBWW0")
     ]
 }
 
 if tabs == "Workout Plan":
-    st.title("Workout Plan")
-    st.markdown(f"**Goal:** {goal} | **Level:** {level}")
-    for group, workouts in muscle_groups.items():
+    st.title(f"Workout Plan for {user_name}")
+    for group, exs in muscle_groups.items():
         st.subheader(group)
-        for i, (name, link) in enumerate(workouts, 1):
-            st.markdown(f"{i}. [{name}]({link})")
+        for i, (ex, link) in enumerate(exs, 1):
+            st.markdown(f"{i}. {linkify(ex, link)}")
 
-diet_plans = {
-    "Lose Weight": {
-        "Veg": {
-            "Beginner": ["Oats + Banana", "Vegetable Soup", "Fruit bowl"],
-            "Intermediate": ["Brown rice + Daal", "Steamed broccoli", "Green Tea"],
-            "Advanced": ["Quinoa + Chickpeas", "Protein shake", "Tofu + Spinach wrap"]
-        },
-        "Non-Veg": {
-            "Beginner": ["Boiled eggs", "Grilled chicken salad", "Apple"],
-            "Intermediate": ["Fish curry + Brown rice", "Yogurt", "Egg whites"],
-            "Advanced": ["Chicken breast + Salad", "Omelette + Toast", "Protein shake"]
-        }
+# Diet Section
+diet_levels = {
+    "Beginner": {
+        "Veg": ["Oats + Banana", "Paneer Sandwich", "Lentils + Rice", "Boiled Veggies", "Green Smoothie"],
+        "Non-Veg": ["Boiled Eggs", "Grilled Chicken + Rice", "Fish + Salad", "Protein Shake", "Yogurt"]
     },
-    "Gain Muscle": {
-        "Veg": {
-            "Beginner": ["Paneer + Roti", "Nuts + Milk", "Sweet potato"],
-            "Intermediate": ["Protein oats", "Tofu + Rice", "Cottage cheese"],
-            "Advanced": ["Quinoa + Paneer", "Protein bar", "Soybeans + Brown rice"]
-        },
-        "Non-Veg": {
-            "Beginner": ["Egg sandwich", "Fish + Potato", "Banana shake"],
-            "Intermediate": ["Chicken breast + Pasta", "Boiled eggs", "Tuna salad"],
-            "Advanced": ["Omelette + Peanut butter toast", "Grilled chicken", "Protein smoothie"]
-        }
+    "Intermediate": {
+        "Veg": ["Quinoa Bowl", "Sprouts", "Tofu Stir Fry", "Veggie Omelet (eggless)", "Smoothie Bowl"],
+        "Non-Veg": ["Egg Whites + Toast", "Turkey Wraps", "Tuna Salad", "Grilled Salmon", "Boiled Chicken"]
     },
-    "Maintain Fitness": {
-        "Veg": {
-            "Beginner": ["Fruit bowl", "Upma", "Vegetable sandwich"],
-            "Intermediate": ["Poha + Nuts", "Chapati + Daal", "Green salad"],
-            "Advanced": ["Tofu salad", "Protein bar", "Mixed vegetable curry"]
-        },
-        "Non-Veg": {
-            "Beginner": ["Eggs + Toast", "Grilled chicken", "Banana"],
-            "Intermediate": ["Tuna sandwich", "Milk + Cereal", "Fish curry"],
-            "Advanced": ["Chicken + Sweet potato", "Egg salad", "Protein bar"]
-        }
+    "Advanced": {
+        "Veg": ["Protein Pancakes", "Bulgur + Chickpeas", "Soy Chunks + Salad", "Greek Yogurt", "Hummus + Veggies"],
+        "Non-Veg": ["Steak + Rice", "Beef Stir Fry", "Salmon Wraps", "Grilled Chicken Bowl", "Omelet + Toast"]
     }
 }
 
 if tabs == "Diet Plan":
-    st.title(f"{diet_type} Diet Plan - {goal} ({level})")
-    for item in diet_plans[goal][diet_type][level]:
+    st.title(f"{diet_type} Diet Plan for {goal} - {level}")
+    for item in diet_levels[level][diet_type]:
         st.markdown(f"- {item}")
 
 elif tabs == "Progress Tracker":
     st.title("Progress Tracker")
-    weight = st.number_input("Weight (kg):", min_value=30, max_value=200, value=70)
-    height = st.number_input("Height (cm):", min_value=100, max_value=250, value=170)
+    weight = st.number_input("Your Weight (kg):", min_value=30, max_value=200, value=70)
+    height = st.number_input("Your Height (cm):", min_value=100, max_value=250, value=170)
     bmi = round(weight / ((height / 100) ** 2), 1)
-    st.success(f"Your BMI is: {bmi}")
+    st.success(f"Your BMI is: **{bmi}**")
 
     st.subheader("Weekly Calorie Burn")
     cal_df = pd.DataFrame({
@@ -203,20 +184,20 @@ elif tabs == "Progress Tracker":
 
     if st.button("Save Progress"):
         with open("progress_log.txt", "a") as f:
-            f.write(f"{datetime.now()} | {st.session_state.email_user} | Weight: {weight} | Height: {height} | BMI: {bmi}\n")
-        st.success("Progress saved!")
+            f.write(f"{datetime.now()} | {st.session_state.email_user} | Weight: {weight}kg | Height: {height}cm | BMI: {bmi}\n")
+        st.success("Progress saved successfully!")
 
 elif tabs == "Motivation":
-    st.title("Motivation")
+    st.title("Daily Motivation")
     st.markdown("**FOR MOTIVATION: GO WATCH NISHANK'S SHIRTLESS PHOTOS.**")
     quotes = [
-        "Push yourself because no one else is going to do it for you.",
-        "Pain is weakness leaving the body.",
-        "Your body can stand almost anything. It’s your mind that you have to convince.",
-        "Train insane or remain the same.",
-        "Excuses don’t burn calories."
+        "No excuses, just results!",
+        "Progress, not perfection.",
+        "Discipline beats motivation.",
+        "Push harder than yesterday!",
+        "You're stronger than you think!"
     ]
     st.info(random.choice(quotes))
 
 st.markdown("---")
-st.markdown("Made with 💪 by **NKFITNESS AI**")
+st.markdown("Built by **NKFITNESS AI**")
