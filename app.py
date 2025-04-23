@@ -1,131 +1,108 @@
-import streamlit as st
-import pandas as pd
-from datetime import datetime
-import random
+import streamlit as st import pyrebase import pandas as pd import random from datetime import datetime
 
-# Dummy user login setup
-st.set_page_config(page_title="NKFITNESS AI", layout="centered")
+Firebase configuration
 
-# Simple login simulation
-users = {"user@example.com": "password123"}
+firebaseConfig = { "apiKey": "AIzaSyBnjOPY0yWreRdW9dD9l9G8F49wnO6WmfE", "authDomain": "nkfitness-ai.firebaseapp.com", "projectId": "nkfitness-ai", "storageBucket": "nkfitness-ai.appspot.com", "messagingSenderId": "", "appId": "", "measurementId": "", "databaseURL": "" }
+
+firebase = pyrebase.initialize_app(firebaseConfig) auth = firebase.auth()
 
 st.title("NKFITNESS AI - Email Login")
 
-auth_mode = st.radio("Choose:", ["Login", "Register"])
-email = st.text_input("Email")
-password = st.text_input("Password", type="password")
+menu = ["Login", "Register"] choice = st.radio("Choose:", menu) email = st.text_input("Email") password = st.text_input("Password", type='password')
 
-if auth_mode == "Register":
-    if st.button("Register"):
-        users[email] = password
-        st.success("Registered successfully. You can now log in.")
+if choice == "Register": if st.button("Register"): try: user = auth.create_user_with_email_and_password(email, password) st.success("Registered successfully. You can now log in.") except: st.error("Registration failed. Try a different email.") else: if st.button("Login"): try: user = auth.sign_in_with_email_and_password(email, password) st.success("Login successful!")
 
-elif auth_mode == "Login":
-    if st.button("Login"):
-        if users.get(email) == password:
-            st.success("Login successful!")
-        else:
-            st.error("Invalid credentials")
+# Workout plan generator
+        st.header("Welcome to NKFITNESS AI!")
+        name = st.text_input("Enter your name")
+        goal = st.selectbox("Select your fitness goal", ["Lose Weight", "Gain Muscle", "Stay Fit"])
+        level = st.radio("Choose your fitness level", ["Beginner", "Intermediate", "Advanced"])
 
-# If login is valid, show app
-if users.get(email) == password:
-    st.title("Welcome to NKFITNESS AI!")
-    name = st.text_input("Enter your name", value="Champion")
+        if st.button("Generate Plan"):
+            st.success(f"Hi {name}! Here's your custom plan to {goal.lower()} at {level.lower()} level:")
 
-    goal = st.selectbox("Select your fitness goal", ["Lose Weight", "Gain Muscle", "Stay Fit"])
-    level = st.radio("Choose your fitness level", ["Beginner", "Intermediate", "Advanced"])
+            workouts = {
+                "Chest": [
+                    ("Push-ups", "https://www.youtube.com/watch?v=_l3ySVKYVJ8"),
+                    ("Bench Press", "https://www.youtube.com/watch?v=gRVjAtPip0Y"),
+                    ("Incline Press", "https://www.youtube.com/watch?v=8iPEnn-ltC8"),
+                    ("Chest Fly", "https://www.youtube.com/watch?v=eozdVDA78K0"),
+                    ("Decline Press", "https://www.youtube.com/watch?v=YxWjcX2ou6k"),
+                    ("Cable Crossover", "https://www.youtube.com/watch?v=taI4XduLpTk"),
+                    ("Dumbbell Press", "https://www.youtube.com/watch?v=VmB1G1K7v94"),
+                    ("Chest Dips", "https://www.youtube.com/watch?v=2z8JmcrW-As"),
+                    ("Machine Press", "https://www.youtube.com/watch?v=s0fOT6Xj2FQ"),
+                    ("Squeeze Press", "https://www.youtube.com/watch?v=Ro_g8cHj5hM")
+                ],
+                "Biceps": [
+                    ("Barbell Curl", "https://www.youtube.com/watch?v=kwG2ipFRgfo"),
+                    ("Dumbbell Curl", "https://www.youtube.com/watch?v=sAq_ocpRh_I"),
+                    ("Hammer Curl", "https://www.youtube.com/watch?v=zC3nLlEvin4"),
+                    ("Concentration Curl", "https://www.youtube.com/watch?v=soxrZlIl35U"),
+                    ("EZ Bar Curl", "https://www.youtube.com/watch?v=soxrZlIl35U"),
+                    ("Cable Curl", "https://www.youtube.com/watch?v=KT9gW4EJFPs"),
+                    ("Preacher Curl", "https://www.youtube.com/watch?v=Zrlxk6z0gzo"),
+                    ("Incline Curl", "https://www.youtube.com/watch?v=ZQBej9XjVdc"),
+                    ("Zottman Curl", "https://www.youtube.com/watch?v=6u-4YbMGqNc"),
+                    ("Spider Curl", "https://www.youtube.com/watch?v=mK9e1SOwujY")
+                ],
+                "Triceps": [
+                    ("Close Grip Bench Press", "https://www.youtube.com/watch?v=iGxF1O6uEjA"),
+                    ("Triceps Pushdown", "https://www.youtube.com/watch?v=2-LAMcpzODU"),
+                    ("Overhead Triceps Extension", "https://www.youtube.com/watch?v=YbX7Wd8jQ-Q"),
+                    ("Skull Crushers", "https://www.youtube.com/watch?v=d_KZxkY_0cM"),
+                    ("Dips", "https://www.youtube.com/watch?v=2z8JmcrW-As"),
+                    ("Kickbacks", "https://www.youtube.com/watch?v=6SS6K3lAwZ8"),
+                    ("Triceps Rope Extension", "https://www.youtube.com/watch?v=vB5OHsJ3EME"),
+                    ("Diamond Push-ups", "https://www.youtube.com/watch?v=J0DnG1_S92I"),
+                    ("Reverse Grip Pushdown", "https://www.youtube.com/watch?v=ODXUgqcxbVU"),
+                    ("Close Grip Push-up", "https://www.youtube.com/watch?v=GJnvwQ1U8IY")
+                ],
+                "Shoulders": [
+                    ("Shoulder Press", "https://www.youtube.com/watch?v=B-aVuyhvLHU"),
+                    ("Lateral Raise", "https://www.youtube.com/watch?v=kDqklk1ZESo"),
+                    ("Front Raise", "https://www.youtube.com/watch?v=-t7fuZ0KhDA"),
+                    ("Rear Delt Fly", "https://www.youtube.com/watch?v=pDTHSxxD2Sg"),
+                    ("Arnold Press", "https://www.youtube.com/watch?v=vj2w851ZHRM"),
+                    ("Upright Row", "https://www.youtube.com/watch?v=6TSP1TRMUzs"),
+                    ("Cable Lateral Raise", "https://www.youtube.com/watch?v=3VcKaXpzqRo"),
+                    ("Face Pull", "https://www.youtube.com/watch?v=rep-qVOkqgk"),
+                    ("Barbell Overhead Press", "https://www.youtube.com/watch?v=2yjwXTZQDDI"),
+                    ("Dumbbell Shrugs", "https://www.youtube.com/watch?v=NUmGRzITZZ0")
+                ],
+                "Legs": [
+                    ("Squats", "https://www.youtube.com/watch?v=aclHkVaku9U"),
+                    ("Leg Press", "https://www.youtube.com/watch?v=IZxyjW7MPJQ"),
+                    ("Lunges", "https://www.youtube.com/watch?v=QOVaHwm-Q6U"),
+                    ("Hamstring Curl", "https://www.youtube.com/watch?v=1Tq3QdYUuHs"),
+                    ("Leg Extensions", "https://www.youtube.com/watch?v=yR5qBK1vCZQ"),
+                    ("Romanian Deadlift", "https://www.youtube.com/watch?v=2SHsk9AzdjA"),
+                    ("Calf Raise", "https://www.youtube.com/watch?v=YMmgqO8Jo-k"),
+                    ("Step Ups", "https://www.youtube.com/watch?v=7vxaWvydKCM"),
+                    ("Jump Squats", "https://www.youtube.com/watch?v=U4s4mEQ5VqU"),
+                    ("Sumo Squats", "https://www.youtube.com/watch?v=9ZuXKqRbT9k")
+                ],
+                "Core": [
+                    ("Planks", "https://www.youtube.com/watch?v=pSHjTRCQxIw"),
+                    ("Russian Twists", "https://www.youtube.com/watch?v=wkD8rjkodUI"),
+                    ("Bicycle Crunches", "https://www.youtube.com/watch?v=9FGilxCbdz8"),
+                    ("Leg Raises", "https://www.youtube.com/watch?v=l4kQd9eWclE"),
+                    ("Mountain Climbers", "https://www.youtube.com/watch?v=nmwgirgXLYM"),
+                    ("V-Ups", "https://www.youtube.com/watch?v=iP2fjvG0g3w"),
+                    ("Sit-Ups", "https://www.youtube.com/watch?v=1fbU_MkV7NE"),
+                    ("Flutter Kicks", "https://www.youtube.com/watch?v=K1Vbr-Yi5wQ"),
+                    ("Crunches", "https://www.youtube.com/watch?v=Xyd_fa5zoEU"),
+                    ("Toe Touches", "https://www.youtube.com/watch?v=JB2oyawG9KI")
+                ]
+            }
 
-    if st.button("Generate Plan"):
-        st.success(f"Hi {name}! Here's your custom fitness plan to {goal.lower()} at {level.lower()} level.")
-        
-        workouts = {
-            "Chest": [("Bench Press", "https://youtu.be/gRVjAtPip0Y"),
-                      ("Incline Dumbbell Press", "https://youtu.be/8iPEnn-ltC8"),
-                      ("Chest Dips", "https://youtu.be/2z8JmcrW-As"),
-                      ("Push-ups", "https://youtu.be/_l3ySVKYVJ8"),
-                      ("Cable Fly", "https://youtu.be/eozdVDA78K0"),
-                      ("Pec Deck Machine", "https://youtu.be/1GULjMS5Fqg"),
-                      ("Decline Press", "https://youtu.be/8Q9p63rAdWc"),
-                      ("Incline Fly", "https://youtu.be/6JtP6ju0IMw"),
-                      ("Svend Press", "https://youtu.be/Wy87sZ6TbpM"),
-                      ("Clap Push-ups", "https://youtu.be/tLz5WhF7Z0c")],
+            for muscle, exercises in workouts.items():
+                st.subheader(muscle)
+                for ex, link in random.sample(exercises, 3):
+                    st.markdown(f"- [{ex}]({link})")
 
-            "Biceps": [("Barbell Curl", "https://youtu.be/kwG2ipFRgfo"),
-                       ("Hammer Curl", "https://youtu.be/zC3nLlEvin4"),
-                       ("Preacher Curl", "https://youtu.be/xj6vmgZjeTE"),
-                       ("Concentration Curl", "https://youtu.be/soxrZlIl35U"),
-                       ("Incline Dumbbell Curl", "https://youtu.be/vPS88sHwdpM"),
-                       ("Zottman Curl", "https://youtu.be/3nlq3aiUGC8"),
-                       ("EZ Bar Curl", "https://youtu.be/XaLLwRf6qH4"),
-                       ("Cable Curl", "https://youtu.be/YT5FkAq9AjU"),
-                       ("Reverse Curl", "https://youtu.be/vB5OHsJ3EME"),
-                       ("Chin-ups", "https://youtu.be/b-ztMQpj8yc")],
+            st.markdown("**Motivation**: _Go watch Nishank's shirtless photos!_")
 
-            "Triceps": [("Tricep Pushdown", "https://youtu.be/2-LAMcpzODU"),
-                        ("Overhead Dumbbell Extension", "https://youtu.be/_gsUck-7M74"),
-                        ("Skull Crushers", "https://youtu.be/d_KZxkY_0cM"),
-                        ("Close-Grip Bench", "https://youtu.be/I4Fv4z2E0Zs"),
-                        ("Dips", "https://youtu.be/2z8JmcrW-As"),
-                        ("Kickbacks", "https://youtu.be/_gsUck-7M74"),
-                        ("Rope Pushdowns", "https://youtu.be/Ej2RzqS-M78"),
-                        ("Diamond Push-ups", "https://youtu.be/J0DnG1_S92I"),
-                        ("Lying Triceps Extension", "https://youtu.be/6SS0UoT_6cE"),
-                        ("Cable Overhead Extension", "https://youtu.be/VhKqoqDkTO0")],
+    except:
+        st.error("Invalid credentials or login failed. Please try again.")
 
-            "Shoulders": [("Overhead Press", "https://youtu.be/2yjwXTZQDDI"),
-                          ("Lateral Raise", "https://youtu.be/3VcKaXpzqRo"),
-                          ("Front Raise", "https://youtu.be/-t7fuZ0KhDA"),
-                          ("Shrugs", "https://youtu.be/NFzTWVKFI-g"),
-                          ("Arnold Press", "https://youtu.be/vj2w851ZHRM"),
-                          ("Rear Delt Fly", "https://youtu.be/Iwe6AmxVf7o"),
-                          ("Upright Row", "https://youtu.be/VG2yEOKJp3Y"),
-                          ("Cable Lateral Raise", "https://youtu.be/n6HIzGXN9gk"),
-                          ("Plate Raise", "https://youtu.be/W-Jz4S8E7EY"),
-                          ("Push Press", "https://youtu.be/B-aVuyhvLHU")],
-
-            "Legs": [("Squats", "https://youtu.be/aclHkVaku9U"),
-                     ("Lunges", "https://youtu.be/QOVaHwm-Q6U"),
-                     ("Leg Press", "https://youtu.be/IZxyjW7MPJQ"),
-                     ("Romanian Deadlift", "https://youtu.be/5WUXV2MNWsk"),
-                     ("Leg Curl", "https://youtu.be/1Tq3QdYUuHs"),
-                     ("Leg Extension", "https://youtu.be/YyvSfVjQeL0"),
-                     ("Bulgarian Split Squat", "https://youtu.be/2C-uNgKwPLE"),
-                     ("Step-ups", "https://youtu.be/YuR4c0Xj4sk"),
-                     ("Jump Squats", "https://youtu.be/A-cFYWvaHr0"),
-                     ("Wall Sit", "https://youtu.be/-cdph8hv0O0")],
-
-            "Core": [("Plank", "https://youtu.be/pSHjTRCQxIw"),
-                     ("Crunches", "https://youtu.be/Xyd_fa5zoEU"),
-                     ("Russian Twist", "https://youtu.be/wkD8rjkodUI"),
-                     ("Leg Raises", "https://youtu.be/JB2oyawG9KI"),
-                     ("Mountain Climbers", "https://youtu.be/GE1mAJ1c0uQ"),
-                     ("Bicycle Crunch", "https://youtu.be/Iwyvozckjak"),
-                     ("Flutter Kicks", "https://youtu.be/Kk6eCdd0U8o"),
-                     ("Side Plank", "https://youtu.be/K2VljzCC16g"),
-                     ("Toe Touch", "https://youtu.be/abqTPksH3Vc"),
-                     ("V-ups", "https://youtu.be/iP2fjvG0g3w")]
-        }
-
-        for group, moves in workouts.items():
-            st.subheader(group)
-            for w, link in moves:
-                st.markdown(f"- [{w}]({link})")
-
-        st.markdown("---")
-        st.subheader("Diet Recommendation")
-        if goal == "Lose Weight":
-            st.write("High protein, low carbs. Drink water. Avoid sugar.")
-        elif goal == "Gain Muscle":
-            st.write("High protein, high carbs. Eat every 2-3 hours. Include whey and eggs.")
-        else:
-            st.write("Balanced macros. Stay hydrated. Eat fresh.")
-
-        st.markdown("---")
-        st.subheader("Progress Tracker")
-        weight = st.number_input("Enter your current weight (kg)", min_value=30.0, max_value=200.0)
-        calories = st.number_input("Enter your daily calorie intake", min_value=1000, max_value=5000)
-        st.success(f"You're at {weight}kg with {calories} daily calories. Keep tracking!")
-
-        st.markdown("---")
-        st.subheader("Motivation")
-        st.markdown("> **FOR MOTIVATION WATCH NISHANK'S SHIRTLESS PHOTOS**")
