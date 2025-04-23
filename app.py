@@ -5,7 +5,7 @@ import pandas as pd
 import random
 from datetime import datetime
 
-FIREBASE_API_KEY = "AIzaSyBnjOPY0yWreRdW9dDl9C8F49wnO6WmfEE"
+FIREBASE_API_KEY = "AIzaSyBnjOPY0yWreRdW9dD9l9G8F49wnO6WmfE"
 
 st.set_page_config(page_title="NKFITNESS AI - Full App", layout="wide")
 
@@ -13,7 +13,6 @@ if "email_token" not in st.session_state:
     st.session_state.email_token = None
     st.session_state.email_user = ""
 
-# Firebase Auth Functions
 def register_user(email, password):
     res = requests.post(
         f"https://identitytoolkit.googleapis.com/v1/accounts:signUp?key={FIREBASE_API_KEY}",
@@ -30,7 +29,6 @@ def login_user(email, password):
     )
     return res
 
-# Login/Register UI
 if not st.session_state.email_token:
     st.title("NKFITNESS AI - Email Login")
     mode = st.radio("Choose:", ["Login", "Register"])
@@ -54,7 +52,6 @@ if not st.session_state.email_token:
                 st.error(response.json()["error"]["message"])
     st.stop()
 
-# Main app once logged in
 st.sidebar.title("Welcome!")
 st.sidebar.markdown(f"**Logged in as:** `{st.session_state.email_user}`")
 tabs = st.sidebar.radio("Navigate to:", ["Workout Plan", "Diet Plan", "Progress Tracker", "Motivation"])
@@ -63,7 +60,6 @@ goal = st.sidebar.selectbox("Select your fitness goal:", ["Lose Weight", "Gain M
 level = st.sidebar.radio("Choose your level:", ["Beginner", "Intermediate", "Advanced"])
 diet_type = st.sidebar.radio("Diet Type:", ["Veg", "Non-Veg"])
 
-# --- Workout Section ---
 muscle_groups = {
     "Chest": ["Flat Bench Press", "Incline Dumbbell Press", "Chest Fly", "Cable Crossovers", "Push-ups",
               "Decline Bench Press", "Dips", "Pec Deck", "Smith Machine Press", "Incline Barbell Press"],
@@ -88,7 +84,6 @@ if tabs == "Workout Plan":
         for i, ex in enumerate(exercises, 1):
             st.markdown(f"**{i}.** {ex}")
 
-# --- Diet Section ---
 diets = {
     "Lose Weight": {
         "Veg": ["Oats + Fruits", "Lentils + Salad", "Green Tea"],
@@ -109,7 +104,6 @@ if tabs == "Diet Plan":
     for item in diets[goal][diet_type]:
         st.markdown(f"- {item}")
 
-# --- Progress Tracker ---
 elif tabs == "Progress Tracker":
     st.title("Progress Tracker")
     weight = st.number_input("Weight (kg):", min_value=30, max_value=200, value=70)
@@ -129,7 +123,6 @@ elif tabs == "Progress Tracker":
             f.write(f"{datetime.now()} | {st.session_state.email_user} | Weight: {weight}kg | Height: {height}cm | BMI: {bmi}\n")
         st.success("Progress saved!")
 
-# --- Motivation Tab ---
 elif tabs == "Motivation":
     st.title("Daily Motivation")
     st.markdown("**FOR MOTIVATION: GO WATCH NISHANK'S SHIRTLESS PHOTOS.**")
