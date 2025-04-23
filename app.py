@@ -54,7 +54,5 @@ if st.button("Save My Workout Plan"):
         f.write(f"{datetime.now()} - {name} - {goal} - {level}\n")
     st.success("Workout plan saved successfully!")
 
---- Diet, Progress, Motivation Tabs follow unchanged...
 
-(Omitted here to focus on new workout logic. Let me know if you want the full file again.)
 
