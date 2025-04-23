@@ -1,4 +1,4 @@
-# NKFITNESS AI Trainer - Massive Muscle Group Expansion
+# NKFITNESS AI Trainer - Massive Muscle Group Expansion + First-Time Motivation Quote
 import streamlit as st
 import random
 import pandas as pd
@@ -14,7 +14,7 @@ name = st.sidebar.text_input("Enter your name:", "Abhigna")
 goal = st.sidebar.selectbox("Select your fitness goal:", ["Lose Weight", "Gain Muscle", "Maintain Fitness"])
 level = st.sidebar.radio("Choose your fitness level:", ["Beginner", "Intermediate", "Advanced"])
 
-# Massive muscle group workouts
+# Muscle Workouts (Expanded)
 muscle_workouts = {
     "Chest": [
         ("Flat Bench Press", "https://www.youtube.com/watch?v=rT7DgCr-3pg"),
@@ -58,11 +58,10 @@ muscle_workouts = {
     ]
 }
 
-# Workout Plan Tab
+# Workout Plan
 if tabs == "Workout Plan":
     st.header(f"{name}'s Custom {goal} Workout Plan - {level} Level")
     st.subheader("Suggested Exercises by Muscle Group")
-
     for muscle, exercises in muscle_workouts.items():
         st.markdown(f"### {muscle}")
         for title, link in random.sample(exercises, min(3, len(exercises))):
@@ -73,7 +72,7 @@ if tabs == "Workout Plan":
             f.write(f"{datetime.now()} - {name} - {goal} - {level}\n")
         st.success("Workout plan saved successfully!")
 
-# Diet Plan Tab
+# Diet Plan
 elif tabs == "Diet Plan":
     st.header(f"{name}'s {goal} Diet Plan")
     st.write("Coming soon...")
@@ -97,12 +96,20 @@ elif tabs == "Progress Tracker":
 # Motivation Tab
 elif tabs == "Motivation":
     st.header("Stay Motivated")
-    st.info(random.choice([
-        "No excuses, just results!",
-        "Every rep counts!",
-        "Progress, not perfection.",
-        "Your body hears everything your mind says."
-    ]))
+    if "first_motivation" not in st.session_state:
+        st.session_state.first_motivation = True
 
+    if st.session_state.first_motivation:
+        st.warning("FOR MOTIVATION: WATCH NISHANK GYM PHOTOS.")
+        st.session_state.first_motivation = False
+    else:
+        st.info(random.choice([
+            "No excuses, just results!",
+            "Every rep counts!",
+            "Progress, not perfection.",
+            "Your body hears everything your mind says."
+        ]))
+
+# Footer
 st.markdown("---")
 st.markdown("Built with :muscle: by NKFITNESS-AI")
