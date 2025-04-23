@@ -1,25 +1,108 @@
-NKFITNESS AI Trainer (Massive Muscle Group Expansion)
+# NKFITNESS AI Trainer - Massive Muscle Group Expansion
+import streamlit as st
+import random
+import pandas as pd
+from datetime import datetime
 
-import streamlit as st import random import pandas as pd from datetime import datetime
+st.set_page_config(page_title="NKFITNESS AI Trainer", layout="wide", page_icon=":muscle:")
+st.title("🏋️ NKFITNESS AI Trainer")
 
-st.set_page_config(page_title="NKFITNESS AI Trainer", layout="wide", page_icon=":muscle:") st.title("🏋️ NKFITNESS AI Trainer")
+# Sidebar
+tabs = st.sidebar.radio("Go to:", ["Workout Plan", "Diet Plan", "Progress Tracker", "Motivation"])
+st.sidebar.markdown("---")
+name = st.sidebar.text_input("Enter your name:", "Abhigna")
+goal = st.sidebar.selectbox("Select your fitness goal:", ["Lose Weight", "Gain Muscle", "Maintain Fitness"])
+level = st.sidebar.radio("Choose your fitness level:", ["Beginner", "Intermediate", "Advanced"])
 
-Sidebar
+# Massive muscle group workouts
+muscle_workouts = {
+    "Chest": [
+        ("Flat Bench Press", "https://www.youtube.com/watch?v=rT7DgCr-3pg"),
+        ("Incline Dumbbell Press", "https://www.youtube.com/watch?v=8iPEnn-ltC8"),
+        ("Decline Barbell Press", "https://www.youtube.com/watch?v=KxQnD1wAqDY"),
+        ("Cable Flys", "https://www.youtube.com/watch?v=taI4XduLpTk"),
+        ("Push-ups", "https://www.youtube.com/watch?v=_l3ySVKYVJ8"),
+        ("Incline Push-ups", "https://www.youtube.com/watch?v=F7jSp2xmmEE"),
+        ("Chest Dips", "https://www.youtube.com/watch?v=2z8JmcrW-As")
+    ],
+    "Back": [
+        ("Deadlifts", "https://www.youtube.com/watch?v=op9kVnSso6Q"),
+        ("Pull-Ups", "https://www.youtube.com/watch?v=eGo4IYlbE5g"),
+        ("Barbell Rows", "https://www.youtube.com/watch?v=FWJR5Ve8bnQ"),
+        ("Lat Pulldowns", "https://www.youtube.com/watch?v=CAwf7n6Luuc")
+    ],
+    "Biceps": [
+        ("Barbell Curl", "https://www.youtube.com/watch?v=kwG2ipFRgfo"),
+        ("Hammer Curl", "https://www.youtube.com/watch?v=zC3nLlEvin4"),
+        ("Incline Dumbbell Curl", "https://www.youtube.com/watch?v=soxrZlIl35U")
+    ],
+    "Triceps": [
+        ("Skull Crushers", "https://www.youtube.com/watch?v=d_KZxkY_0cM"),
+        ("Tricep Dips", "https://www.youtube.com/watch?v=0326dy_-CzM"),
+        ("Pushdowns", "https://www.youtube.com/watch?v=2-LAMcpzODU")
+    ],
+    "Shoulders": [
+        ("Overhead Press", "https://www.youtube.com/watch?v=2yjwXTZQDDI"),
+        ("Lateral Raises", "https://www.youtube.com/watch?v=kDqklk1ZESo"),
+        ("Arnold Press", "https://www.youtube.com/watch?v=vj2w851ZHRM")
+    ],
+    "Legs": [
+        ("Barbell Squats", "https://www.youtube.com/watch?v=Dy28eq2PjcM"),
+        ("Lunges", "https://www.youtube.com/watch?v=QOVaHwm-Q6U"),
+        ("Leg Press", "https://www.youtube.com/watch?v=IZxyjW7MPJQ")
+    ],
+    "Core": [
+        ("Plank Holds", "https://www.youtube.com/watch?v=pSHjTRCQxIw"),
+        ("Russian Twists", "https://www.youtube.com/watch?v=wkD8rjkodUI"),
+        ("Leg Raises", "https://www.youtube.com/watch?v=l4kQd9eWclE")
+    ]
+}
 
-tabs = st.sidebar.radio("Go to:", ["Workout Plan", "Diet Plan", "Progress Tracker", "Motivation"]) st.sidebar.markdown("---") name = st.sidebar.text_input("Enter your name:", "Abhigna") goal = st.sidebar.selectbox("Select your fitness goal:", ["Lose Weight", "Gain Muscle", "Maintain Fitness"]) level = st.sidebar.radio("Choose your fitness level:", ["Beginner", "Intermediate", "Advanced"])
+# Workout Plan Tab
+if tabs == "Workout Plan":
+    st.header(f"{name}'s Custom {goal} Workout Plan - {level} Level")
+    st.subheader("Suggested Exercises by Muscle Group")
 
-Expanded Muscle Workouts (15+ per group)
+    for muscle, exercises in muscle_workouts.items():
+        st.markdown(f"### {muscle}")
+        for title, link in random.sample(exercises, min(3, len(exercises))):
+            st.write(f"{title}: [Watch Video]({link})")
 
-muscle_workouts = { "Chest": [ ("Flat Barbell Bench Press", "https://www.youtube.com/watch?v=rT7DgCr-3pg"), ("Incline Dumbbell Press", "https://www.youtube.com/watch?v=8iPEnn-ltC8"), ("Decline Barbell Press", "https://www.youtube.com/watch?v=KxQnD1wAqDY"), ("Machine Chest Press", "https://www.youtube.com/watch?v=2cFxFTzUBZ8"), ("Cable Flys", "https://www.youtube.com/watch?v=taI4XduLpTk"), ("Push-ups", "https://www.youtube.com/watch?v=_l3ySVKYVJ8"), ("Incline Push-ups", "https://www.youtube.com/watch?v=F7jSp2xmmEE"), ("Pec Deck", "https://www.youtube.com/watch?v=YbX7Wd8jQ-Q"), ("Landmine Chest Press", "https://www.youtube.com/watch?v=HwZBA6yDq64"), ("Decline Dumbbell Press", "https://www.youtube.com/watch?v=3YvfRx31xDE"), ("Smith Machine Press", "https://www.youtube.com/watch?v=woBPnY3n4j8"), ("Dumbbell Flys", "https://www.youtube.com/watch?v=eozdVDA78K0"), ("Chest Dips", "https://www.youtube.com/watch?v=2z8JmcrW-As") ], "Back": [ ("Deadlifts", "https://www.youtube.com/watch?v=op9kVnSso6Q"), ("Pull-Ups", "https://www.youtube.com/watch?v=eGo4IYlbE5g"), ("Bent-over Barbell Row", "https://www.youtube.com/watch?v=vT2GjY_Umpw"), ("Lat Pulldowns", "https://www.youtube.com/watch?v=CAwf7n6Luuc"), ("Seated Cable Row", "https://www.youtube.com/watch?v=HJSVR_67OlM"), ("T-Bar Row", "https://www.youtube.com/watch?v=F3QY5vMz_6I"), ("One-arm Dumbbell Row", "https://www.youtube.com/watch?v=pYcpY20QaE8"), ("Inverted Rows", "https://www.youtube.com/watch?v=6E1nL0kO-gA"), ("Cable Straight-arm Pulldown", "https://www.youtube.com/watch?v=6S9D5cGkddc") ], "Biceps": [ ("Barbell Curl", "https://www.youtube.com/watch?v=kwG2ipFRgfo"), ("Hammer Curl", "https://www.youtube.com/watch?v=zC3nLlEvin4"), ("Concentration Curl", "https://www.youtube.com/watch?v=soxrZlIl35U"), ("EZ Bar Curl", "https://www.youtube.com/watch?v=uG2AjB5iJ3o"), ("Cable Curl", "https://www.youtube.com/watch?v=ykJmrZ5v0Oo"), ("Incline Dumbbell Curl", "https://www.youtube.com/watch?v=soxrZlIl35U"), ("Preacher Curl", "https://www.youtube.com/watch?v=XeErfmGSwfE"), ("21s Bicep Curl", "https://www.youtube.com/watch?v=frD0gA1sPoA") ], "Triceps": [ ("Close-grip Bench Press", "https://www.youtube.com/watch?v=GODEdUr9ZL4"), ("Skull Crushers", "https://www.youtube.com/watch?v=d_KZxkY_0cM"), ("Tricep Pushdowns", "https://www.youtube.com/watch?v=2-LAMcpzODU"), ("Overhead Dumbbell Extensions", "https://www.youtube.com/watch?v=YbX7Wd8jQ-Q"), ("Cable Overhead Extension", "https://www.youtube.com/watch?v=2-LAMcpzODU"), ("Bench Dips", "https://www.youtube.com/watch?v=tKjcgfu44sI") ], "Shoulders": [ ("Overhead Barbell Press", "https://www.youtube.com/watch?v=2yjwXTZQDDI"), ("Seated Dumbbell Press", "https://www.youtube.com/watch?v=B-aVuyhvLHU"), ("Lateral Raises", "https://www.youtube.com/watch?v=kDqklk1ZESo"), ("Front Raises", "https://www.youtube.com/watch?v=-t7fuZ0KhDA"), ("Face Pulls", "https://www.youtube.com/watch?v=rep-qVOkqgk"), ("Reverse Pec Deck", "https://www.youtube.com/watch?v=Q8eIbmypn2k") ], "Legs": [ ("Barbell Back Squat", "https://www.youtube.com/watch?v=Dy28eq2PjcM"), ("Walking Lunges", "https://www.youtube.com/watch?v=wrwwXE_x-pQ"), ("Leg Press", "https://www.youtube.com/watch?v=IZxyjW7MPJQ"), ("Romanian Deadlift", "https://www.youtube.com/watch?v=2SHsk9AzdjA"), ("Glute Bridge", "https://www.youtube.com/watch?v=m2Zx-57cSok"), ("Seated Calf Raise", "https://www.youtube.com/watch?v=YMmgqO8Jo-k") ], "Core": [ ("Planks", "https://www.youtube.com/watch?v=pSHjTRCQxIw"), ("Hanging Leg Raises", "https://www.youtube.com/watch?v=JB2oyawG9KI"), ("Cable Crunches", "https://www.youtube.com/watch?v=suC2Wz8bdrs"), ("Russian Twists", "https://www.youtube.com/watch?v=wkD8rjkodUI"), ("V-Ups", "https://www.youtube.com/watch?v=iP2fjvG0g3w") ] }
+    if st.button("Save My Workout Plan"):
+        with open("saved_workouts.txt", "a") as f:
+            f.write(f"{datetime.now()} - {name} - {goal} - {level}\n")
+        st.success("Workout plan saved successfully!")
 
-Workout Tab
+# Diet Plan Tab
+elif tabs == "Diet Plan":
+    st.header(f"{name}'s {goal} Diet Plan")
+    st.write("Coming soon...")
 
-if tabs == "Workout Plan": st.header(f"{name}'s Custom {goal} Workout Plan - {level} Level") st.subheader("Suggested Exercises by Muscle Group") for muscle, workouts in muscle_workouts.items(): st.markdown(f"### {muscle}") for title, url in random.sample(workouts, min(5, len(workouts))): st.write(f"{title}: Watch Video")
+# Progress Tracker
+elif tabs == "Progress Tracker":
+    st.header("Progress Tracker")
+    height = st.number_input("Height (cm):", min_value=100, max_value=250, value=175)
+    weight = st.number_input("Weight (kg):", min_value=30, max_value=200, value=70)
+    if height and weight:
+        bmi = round(weight / ((height / 100) ** 2), 1)
+        st.success(f"Your BMI is: {bmi}")
 
-if st.button("Save My Workout Plan"):
-    with open("saved_workouts.txt", "a") as f:
-        f.write(f"{datetime.now()} - {name} - {goal} - {level}\n")
-    st.success("Workout plan saved successfully!")
+    st.subheader("Calories Burned This Week")
+    df = pd.DataFrame({
+        "Day": [f"Day {i}" for i in range(1, 8)],
+        "Calories": [random.randint(200, 500) for _ in range(7)]
+    })
+    st.line_chart(df.set_index("Day"))
 
-Other tabs (Diet, Progress, Motivation) unchanged for now
+# Motivation Tab
+elif tabs == "Motivation":
+    st.header("Stay Motivated")
+    st.info(random.choice([
+        "No excuses, just results!",
+        "Every rep counts!",
+        "Progress, not perfection.",
+        "Your body hears everything your mind says."
+    ]))
 
+st.markdown("---")
+st.markdown("Built with :muscle: by NKFITNESS-AI")
