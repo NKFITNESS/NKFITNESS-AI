@@ -44,9 +44,9 @@ if not st.session_state.email_token:
         else:
             response = login_user(email, password)
             if response.status_code == 200:
-                st.session_state.email_token = response.json()["idToken"]
-                st.session_state.email_user = email
-                st.success(f"Welcome, {email}")
+    st.session_state.email_token = response.json()["idToken"]
+    st.session_state.email_user = email
+    st.experimental_rerun()  # This will immediately refresh and load the main app
             else:
                 st.error(response.json()["error"]["message"])
     st.stop()
