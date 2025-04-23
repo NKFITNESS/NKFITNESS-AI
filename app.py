@@ -1,36 +1,72 @@
-# NKFITNESS AI - Full Version: Login, Levels, Diet, Progress Tracker, Muscle Workouts
+# NKFITNESS AI - Final App with Real Firebase OTP Login + Full Features
 
 import streamlit as st
 import random
 import pandas as pd
+import requests
+import json
 from datetime import datetime
+
+# Firebase API Key
+FIREBASE_API_KEY = "AIzaSyBnjOPY0yWreRdW9dDl9C8F49wnO6WmfEE"
 
 st.set_page_config(page_title="NKFITNESS AI", layout="wide")
 
-if "user" not in st.session_state:
-    st.session_state.user = None
+# --- Firebase OTP Login ---
+if "idToken" not in st.session_state:
+    st.session_state.idToken = None
+    st.session_state.phone = ""
+    st.session_state.session_info = ""
 
-if not st.session_state.user:
-    st.title("NKFITNESS AI - Phone OTP Login")
-    phone = st.text_input("Enter test phone number", value="+911234567890")
-    otp = st.text_input("Enter OTP", value="123456")
-    if st.button("Login"):
-        if phone == "+911234567890" and otp == "123456":
-            st.session_state.user = phone
-            st.success(f"Welcome, {phone}!")
+st.title("NKFITNESS AI - Login with Phone OTP")
+
+if not st.session_state.idToken:
+    phone = st.text_input("Enter your phone number (+91...):", value=st.session_state.phone or "")
+    if st.button("Send OTP"):
+        res = requests.post(
+            f"https://identitytoolkit.googleapis.com/v1/accounts:sendVerificationCode?key={FIREBASE_API_KEY}",
+            headers={"Content-Type": "application/json"},
+            data=json.dumps({
+                "phoneNumber": phone,
+                "recaptchaToken": "mock"
+            })
+        )
+        if res.status_code == 200:
+            st.session_state.phone = phone
+            st.session_state.session_info = res.json()["sessionInfo"]
+            st.success("OTP sent successfully.")
         else:
-            st.error("Invalid phone or OTP.")
+            st.error("Failed to send OTP. Use test number or check Firebase settings.")
+
+if st.session_state.session_info and not st.session_state.idToken:
+    otp = st.text_input("Enter OTP:")
+    if st.button("Verify OTP"):
+        res = requests.post(
+            f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPhoneNumber?key={FIREBASE_API_KEY}",
+            headers={"Content-Type": "application/json"},
+            data=json.dumps({
+                "sessionInfo": st.session_state.session_info,
+                "code": otp
+            })
+        )
+        if res.status_code == 200:
+            st.session_state.idToken = res.json()["idToken"]
+            st.success(f"Welcome, {st.session_state.phone}!")
+        else:
+            st.error("Invalid OTP.")
+
+if not st.session_state.idToken:
     st.stop()
 
-st.sidebar.markdown(f"**Logged in as:** `{st.session_state.user}`")
-st.title("🏋️ NKFITNESS AI Trainer")
+# --- Sidebar Controls ---
+st.sidebar.markdown(f"**Logged in as:** `{st.session_state.phone}`")
 tabs = st.sidebar.radio("Go to:", ["Workout Plan", "Diet Plan", "Progress Tracker", "Motivation"])
 
 goal = st.sidebar.selectbox("Select your goal:", ["Lose Weight", "Gain Muscle", "Maintain Fitness"])
 level = st.sidebar.radio("Choose fitness level:", ["Beginner", "Intermediate", "Advanced"])
 diet_type = st.sidebar.radio("Diet Type:", ["Veg", "Non-Veg"])
 
-# --- Muscle Group Workouts ---
+# --- Workout Plan ---
 muscle_groups = {
     "Chest": ["Flat Bench Press", "Incline Dumbbell Press", "Chest Fly", "Cable Crossovers", "Push-ups",
               "Decline Bench Press", "Dips", "Pec Deck", "Smith Machine Press", "Incline Barbell Press"],
@@ -48,7 +84,6 @@ muscle_groups = {
              "V-Ups", "Cable Crunch", "Bicycle Crunches", "Toe Touches", "Hanging Leg Raises"]
 }
 
-# --- Workout Plan Tab ---
 if tabs == "Workout Plan":
     st.header("Workout Variations by Muscle Group")
     for group, exercises in muscle_groups.items():
@@ -56,7 +91,7 @@ if tabs == "Workout Plan":
         for i, ex in enumerate(exercises, 1):
             st.markdown(f"**{i}.** {ex}")
 
-# --- Diet Plan Tab ---
+# --- Diet Plan ---
 diets = {
     "Lose Weight": {
         "Veg": ["Oats + Fruits", "Lentils + Salad", "Green Tea"],
@@ -77,7 +112,7 @@ if tabs == "Diet Plan":
     for item in diets[goal][diet_type]:
         st.markdown(f"- {item}")
 
-# --- Progress Tracker Tab ---
+# --- Progress Tracker ---
 elif tabs == "Progress Tracker":
     st.header("Track Your Fitness Progress")
     weight = st.number_input("Enter your current weight (kg):", min_value=30, max_value=200, value=70)
@@ -94,10 +129,10 @@ elif tabs == "Progress Tracker":
 
     if st.button("Save Progress"):
         with open("progress_log.txt", "a") as f:
-            f.write(f"{datetime.now()} | {st.session_state.user} | Weight: {weight}kg | Height: {height}cm | BMI: {bmi}\n")
+            f.write(f"{datetime.now()} | {st.session_state.phone} | Weight: {weight}kg | Height: {height}cm | BMI: {bmi}\n")
         st.success("Progress saved successfully!")
 
-# --- Motivation Tab ---
+# --- Motivation ---
 elif tabs == "Motivation":
     st.header("Daily Motivation")
     if "first_motivation" not in st.session_state:
